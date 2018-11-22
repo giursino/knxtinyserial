@@ -22,9 +22,12 @@ DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
 #include <unistd.h>
-#include <SerialPort.h>
 
 using namespace std;
+
+#ifdef ENABLE_SERIAL
+#include <SerialPort.h>
+
 
 #define SERIAL_PATH "/dev/ttyUSB0"
 
@@ -78,12 +81,16 @@ void SerialPortTest(void)
 
     serial_port.Close();
 }
+#endif
 
 
 int main()
 {
   cout << "Starting..." << endl;
+
+#ifdef ENABLE_SERIAL
   SerialPortTest();
+#endif
   cout << "done." << endl;
   return 0;
 }

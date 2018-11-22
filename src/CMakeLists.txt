@@ -8,20 +8,29 @@ add_executable(${TARGET_NAME}
     ${TARGET_HEADERS}
 )
 
-target_include_directories(${TARGET_NAME}
-PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${LIBSERIAL_INCLUDE_DIRS}
-PRIVATE
-  ${CMAKE_SOURCE_DIR}/include
-)
+if(ENABLE_SERIAL)
+    target_include_directories(${TARGET_NAME}
+    PUBLIC
+      ${CMAKE_CURRENT_SOURCE_DIR}
+      ${LIBSERIAL_INCLUDE_DIRS}
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/include
+    )
 
-target_link_libraries(${TARGET_NAME}
-  ${LIBSERIAL_LIBRARIES}
-  pthread
-)
+    target_link_libraries(${TARGET_NAME}
+      ${LIBSERIAL_LIBRARIES}
+      pthread
+    )
 
-target_compile_options(${TARGET_NAME}
-PUBLIC
-  ${LIBSERIAL_CFLAGS_OTHER}
-)
+    target_compile_options(${TARGET_NAME}
+    PUBLIC
+      ${LIBSERIAL_CFLAGS_OTHER}
+    )
+else()
+    target_include_directories(${TARGET_NAME}
+    PUBLIC
+      ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/include
+    )
+endif()
