@@ -29,7 +29,8 @@ using namespace std;
 #include <SerialPort.h>
 
 
-#define SERIAL_PATH "/dev/ttyUSB0"
+//#define SERIAL_PATH "/dev/ttyUSB0"
+#define SERIAL_PATH "/dev/serial0"
 
 
 
