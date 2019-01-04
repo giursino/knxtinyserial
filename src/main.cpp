@@ -119,6 +119,7 @@ void KnxTinySerialTest(void) {
       std::cout << "INVALID MESSAGE" << std::endl;
       kdriver.PrintMsg(frame);
     }
+    kdriver.Sleep();
   }
   kdriver.DeInit();
 

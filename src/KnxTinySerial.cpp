@@ -29,17 +29,17 @@ DEALINGS IN THE SOFTWARE.
 #include <iomanip>
 #include "KnxTinySerial.h"
 
-void KnxTinySerial::PrintHexByte(unsigned char byte) {
+void KnxTinySerial::PrintHexByte(uint8_t byte) {
   std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte) << ' ';
 }
 
-void KnxTinySerial::PrintByte(unsigned char byte) {
+void KnxTinySerial::PrintByte(uint8_t byte) {
   std::cout << "Read: ";
   PrintHexByte(byte);
   std::cout << std::endl;
 }
 
-void KnxTinySerial::PrintMsg(std::vector<unsigned char> &data) {
+void KnxTinySerial::PrintMsg(std::vector<uint8_t> &data) {
   if (data.size() != 0) {
     std::cout << "Read: ";
     for (auto i: data)
@@ -49,10 +49,15 @@ void KnxTinySerial::PrintMsg(std::vector<unsigned char> &data) {
   std::cout << std::flush;
 }
 
-bool KnxTinySerial::SerialReadAndCompare(const std::vector<unsigned char> &compare_buf,
+void KnxTinySerial::Sleep(const unsigned int ms_timeout)
+{
+  if (!m_serial_port.IsDataAvailable()) Wait(ms_timeout);
+}
+
+bool KnxTinySerial::SerialReadAndCompare(const std::vector<uint8_t> &compare_buf,
                                          const unsigned int ms_timeout)
 {
-  std::vector<unsigned char> receive_buf;
+  std::vector<uint8_t> receive_buf;
   try {
     m_serial_port.Read(receive_buf, compare_buf.size(), ms_timeout);
     PrintMsg(receive_buf);
@@ -67,7 +72,7 @@ bool KnxTinySerial::SerialReadAndCompare(const std::vector<unsigned char> &compa
   return false;
 }
 
-bool KnxTinySerial::SerialReadByte(unsigned char &rx_byte, const unsigned int ms_timeout) {
+bool KnxTinySerial::SerialReadByte(uint8_t &rx_byte, const unsigned int ms_timeout) {
   try {
     rx_byte = m_serial_port.ReadByte(ms_timeout);
     return true;
@@ -76,15 +81,15 @@ bool KnxTinySerial::SerialReadByte(unsigned char &rx_byte, const unsigned int ms
   return false;
 }
 
-void KnxTinySerial::Wait()
+void KnxTinySerial::Wait(const unsigned int ms_timeout)
 {
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  std::this_thread::sleep_for(std::chrono::milliseconds(ms_timeout));
 }
 
 void KnxTinySerial::Flush()
 {
   try {
-    std::vector<unsigned char> buf;
+    std::vector<uint8_t> buf;
     m_serial_port.Read(buf, 0, timeout);
   }
   catch (SerialPort::ReadTimeout){}
@@ -122,8 +127,10 @@ void KnxTinySerial::Reset() {
 
 }
 
-void KnxTinySerial::SetIndividualAddress(unsigned char addr_high, unsigned char addr_low) {
+void KnxTinySerial::SetIndividualAddress() {
   bool retry = true;
+  uint8_t addr_high = (m_individual_addr & 0xFF00) >> 8;
+  uint8_t addr_low = (m_individual_addr & 0x00FF);
 
   while(retry) {
     std::cout << "*** setting individual address procedure..." << std::endl;;
@@ -168,8 +175,8 @@ void KnxTinySerial::SetIndividualAddress(unsigned char addr_high, unsigned char 
 
 }
 
-KnxTinySerial::KnxTinySerial(SerialPort& serial_port):
-    m_serial_port(serial_port)
+KnxTinySerial::KnxTinySerial(SerialPort& serial_port, const uint16_t individual_addr):
+  m_serial_port(serial_port), m_individual_addr(individual_addr)
 {
 
 }
@@ -201,7 +208,7 @@ void KnxTinySerial::Init() {
 
   while (retry) {
     Reset();
-    SetIndividualAddress(0x11, 0x0F);
+    SetIndividualAddress();
     if (CheckState() == false) {
       std::cerr << "error checking state" << std::endl;
       continue;
@@ -217,21 +224,36 @@ void KnxTinySerial::DeInit()
 }
 
 
-bool KnxTinySerial::CheckChecksum(std::vector<unsigned char> frame, unsigned char checksum) {
-  unsigned char cs = 0xFF;
+bool KnxTinySerial::CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum) {
+  uint8_t cs = 0xFF;
   for (auto i: frame) cs ^= i;
   cs ^= checksum;
   return !cs ? true : false;
 }
 
-bool KnxTinySerial::Read(std::vector<unsigned char> &rx_frame) {
+bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
   const int timeout = 500;
-  unsigned char rx_byte;
+  uint8_t rx_byte;
 
   rx_frame.clear();
 
-  // control field
+  // control field or UART service
   if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (rx_byte == 0x03) {
+    // UART_Reset.ind
+    SetIndividualAddress();
+    return false;
+  }
+  if (rx_byte == 0x0B) {
+    // TODO: conferma invio messaggio, da sincronizzare
+    std::cout << "L_DATA.conf: negative" << std::endl;
+    return false;
+  }
+  if (rx_byte == 0x8B) {
+    // TODO: conferma invio messaggio, da sincronizzare
+    std::cout << "L_DATA.conf: positive" << std::endl;
+    return false;
+  }
   if ((rx_byte & 0xD3) != 0x90) return false;
   rx_frame.push_back(rx_byte);
 
@@ -250,10 +272,10 @@ bool KnxTinySerial::Read(std::vector<unsigned char> &rx_frame) {
   // DAF & length
   if (!SerialReadByte(rx_byte, timeout)) return false;
   rx_frame.push_back(rx_byte);
-  unsigned char length = (rx_byte & 0x0F) + 1;
+  uint8_t length = (rx_byte & 0x0F) + 1;
 
   // payload
-  for (unsigned char i=0; i<length; i++) {
+  for (uint8_t i=0; i<length; i++) {
     if (!SerialReadByte(rx_byte, timeout)) return false;
     rx_frame.push_back(rx_byte);
   }

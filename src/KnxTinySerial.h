@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #ifndef KNXTINYSERIAL_H
 #define KNXTINYSERIAL_H
 
+#include <cstdint>
 #include <SerialPort.h>
 
 extern const size_t timeout;
@@ -31,33 +32,35 @@ extern bool is_running;
 class KnxTinySerial
 {
 public:
-  KnxTinySerial(SerialPort& serial_port);
+  KnxTinySerial(SerialPort& serial_port, const uint16_t individual_addr = 0x110F);
   ~KnxTinySerial();
 
   void Init();
   void DeInit();
 
-  bool Read(std::vector<unsigned char> &rx_frame);
+  bool Read(std::vector<uint8_t> &rx_frame);
 
-  static void PrintHexByte(unsigned char byte);
-  static void PrintByte(unsigned char byte);
-  static void PrintMsg(std::vector<unsigned char>& data);
+  static void PrintHexByte(uint8_t byte);
+  static void PrintByte(uint8_t byte);
+  static void PrintMsg(std::vector<uint8_t>& data);
+
+  void Sleep(const unsigned int ms_timeout = timeout);
 
 private:
   SerialPort& m_serial_port;
+  uint16_t m_individual_addr;
 
-
-  bool CheckChecksum(std::vector<unsigned char> frame, unsigned char checksum);
+  bool CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum);
 
   bool CheckState();
   void Reset();
-  void SetIndividualAddress(unsigned char addr_high, unsigned char addr_low);
+  void SetIndividualAddress();
 
-  void Wait();
+  void Wait(const unsigned int ms_timeout = 500);
 
-  bool SerialReadAndCompare(const std::vector<unsigned char>& compare_buf,
+  bool SerialReadAndCompare(const std::vector<uint8_t>& compare_buf,
                             const unsigned int ms_timeout = timeout);
-  bool SerialReadByte(unsigned char& rx_byte,
+  bool SerialReadByte(uint8_t& rx_byte,
                       const unsigned int ms_timeout = timeout);
   void Flush();
 };
