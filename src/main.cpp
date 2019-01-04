@@ -29,14 +29,15 @@ DEALINGS IN THE SOFTWARE.
 
 #ifdef ENABLE_SERIAL
 #include <SerialPort.h>
+#include "KnxTinySerial.h"
 
 
 //#define SERIAL_PATH "/dev/ttyUSB0"
 #define SERIAL_PATH "/dev/serial0"
 
 
-static bool is_running=true;
-static const size_t timeout=2000;
+bool is_running=true;
+const size_t timeout=2000;
 
 void PrintHexByte(unsigned char byte) {
   std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte) << ' ';
@@ -202,17 +203,6 @@ void TinySerialInit(SerialPort& serial_port) {
   std::cout << "init done." << std::endl;
 }
 
-bool CheckChecksum(std::vector<unsigned char> frame, unsigned char checksum) {
-  unsigned char cs = 0xFF;
-  std::vector<unsigned char>::const_iterator iter = frame.begin() + 1;
-  std::vector<unsigned char>::const_iterator end = frame.end();
-  for (; iter != end; ++iter)
-  {
-    cs ^= *iter;
-  }
-  cs ^= checksum;
-  return !cs ? true : false;
-}
 
 
 std::vector<unsigned char> TinySerialRead(SerialPort& serial_port) {
@@ -337,6 +327,25 @@ void TinySerialTest3(void) {
   serial_port.Close();
 }
 
+void TinySerialTest4(void) {
+  std::cout << "opening..." << SERIAL_PATH << std::endl;
+  SerialPort serial_port( SERIAL_PATH ) ;
+  serial_port.Open();
+
+  if (serial_port.IsOpen() == false) {
+    std::cout << "WARNING: serial port not open!" << std::endl;
+    return;
+  }
+
+  KnxTinySerial kdriver(serial_port);
+
+  kdriver.Init();
+  kdriver.Read();
+  kdriver.DeInit();
+
+  serial_port.Close();
+}
+
 
 void SerialPortTest(void)
 {
@@ -383,10 +392,11 @@ int main()
   std::cout << "Starting..." << std::endl;
 
 #ifdef ENABLE_SERIAL
-  //SerialPortTest();
+//  SerialPortTest();
 //  TinySerialTest();
 //  TinySerialTest2();
-  TinySerialTest3();
+//  TinySerialTest3();
+    TinySerialTest4();
 #endif
 
   std::cout << "done." << std::endl;

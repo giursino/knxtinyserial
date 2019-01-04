@@ -23,11 +23,37 @@ DEALINGS IN THE SOFTWARE.
 #ifndef KNXTINYSERIAL_H
 #define KNXTINYSERIAL_H
 
+#include <SerialPort.h>
+
+extern const size_t timeout;
+extern bool is_running;
 
 class KnxTinySerial
 {
 public:
-  KnxTinySerial();
+  KnxTinySerial(SerialPort& serial_port);
+  ~KnxTinySerial();
+
+  void Init();
+  void DeInit();
+
+  void Read();
+private:
+  SerialPort& m_serial_port;
+
+  void PrintHexByte(unsigned char byte);
+  void PrintByte(unsigned char byte);
+  void PrintMsg(std::vector<unsigned char>& data);
+
+  bool CheckChecksum(std::vector<unsigned char> frame, unsigned char checksum);
+
+  bool CheckState();
+  void Reset();
+  void SetIndividualAddress(unsigned char addr_high, unsigned char addr_low);
+
+  bool SerialReadAndCompare(const std::vector<unsigned char>& compare_buf,
+                            const unsigned int ms_timeout = timeout);
+  void Wait();
 };
 
 #endif // KNXTINYSERIAL_H
