@@ -67,9 +67,27 @@ bool KnxTinySerial::SerialReadAndCompare(const std::vector<unsigned char> &compa
   return false;
 }
 
+bool KnxTinySerial::SerialReadByte(unsigned char &rx_byte, const unsigned int ms_timeout) {
+  try {
+    rx_byte = m_serial_port.ReadByte(ms_timeout);
+    return true;
+  }
+  catch (SerialPort::ReadTimeout){}
+  return false;
+}
+
 void KnxTinySerial::Wait()
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+}
+
+void KnxTinySerial::Flush()
+{
+  try {
+    std::vector<unsigned char> buf;
+    m_serial_port.Read(buf, 0, timeout);
+  }
+  catch (SerialPort::ReadTimeout){}
 }
 
 
@@ -110,6 +128,7 @@ void KnxTinySerial::SetIndividualAddress(unsigned char addr_high, unsigned char 
   while(retry) {
     std::cout << "*** setting individual address procedure..." << std::endl;;
     Wait();
+    Flush();
 
     std::cout << "sending U_WriteProperty.req to disable AUTO IACK..." << std::endl;
     m_serial_port.WriteByte(0x22);
@@ -200,28 +219,50 @@ void KnxTinySerial::DeInit()
 
 bool KnxTinySerial::CheckChecksum(std::vector<unsigned char> frame, unsigned char checksum) {
   unsigned char cs = 0xFF;
-  std::vector<unsigned char>::const_iterator iter = frame.begin() + 1;
-  std::vector<unsigned char>::const_iterator end = frame.end();
-  for (; iter != end; ++iter)
-  {
-    cs ^= *iter;
-  }
+  for (auto i: frame) cs ^= i;
   cs ^= checksum;
   return !cs ? true : false;
 }
 
-void KnxTinySerial::Read() {
-    while (is_running) {
-      unsigned char buf;
+bool KnxTinySerial::Read(std::vector<unsigned char> &rx_frame) {
+  const int timeout = 500;
+  unsigned char rx_byte;
 
-      buf = m_serial_port.ReadByte(0);
+  rx_frame.clear();
 
-      if (buf == 0xbc) {
-        std::cout << std::endl;
-        std::cout << "Read: ";
-      }
-      PrintHexByte(buf);
-    }
+  // control field
+  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if ((rx_byte & 0xD3) != 0x90) return false;
+  rx_frame.push_back(rx_byte);
+
+  // source address
+  if (!SerialReadByte(rx_byte, timeout)) return false;
+  rx_frame.push_back(rx_byte);
+  if (!SerialReadByte(rx_byte, timeout)) return false;
+  rx_frame.push_back(rx_byte);
+
+  // destination address
+  if (!SerialReadByte(rx_byte, timeout)) return false;
+  rx_frame.push_back(rx_byte);
+  if (!SerialReadByte(rx_byte, timeout)) return false;
+  rx_frame.push_back(rx_byte);
+
+  // DAF & length
+  if (!SerialReadByte(rx_byte, timeout)) return false;
+  rx_frame.push_back(rx_byte);
+  unsigned char length = (rx_byte & 0x0F) + 1;
+
+  // payload
+  for (unsigned char i=0; i<length; i++) {
+    if (!SerialReadByte(rx_byte, timeout)) return false;
+    rx_frame.push_back(rx_byte);
+  }
+
+  // checksum
+  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!CheckChecksum(rx_frame, rx_byte)) return false;
+
+  return true;
 }
 
 #endif

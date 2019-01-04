@@ -37,13 +37,15 @@ public:
   void Init();
   void DeInit();
 
-  void Read();
+  bool Read(std::vector<unsigned char> &rx_frame);
+
+  static void PrintHexByte(unsigned char byte);
+  static void PrintByte(unsigned char byte);
+  static void PrintMsg(std::vector<unsigned char>& data);
+
 private:
   SerialPort& m_serial_port;
 
-  void PrintHexByte(unsigned char byte);
-  void PrintByte(unsigned char byte);
-  void PrintMsg(std::vector<unsigned char>& data);
 
   bool CheckChecksum(std::vector<unsigned char> frame, unsigned char checksum);
 
@@ -51,9 +53,13 @@ private:
   void Reset();
   void SetIndividualAddress(unsigned char addr_high, unsigned char addr_low);
 
+  void Wait();
+
   bool SerialReadAndCompare(const std::vector<unsigned char>& compare_buf,
                             const unsigned int ms_timeout = timeout);
-  void Wait();
+  bool SerialReadByte(unsigned char& rx_byte,
+                      const unsigned int ms_timeout = timeout);
+  void Flush();
 };
 
 #endif // KNXTINYSERIAL_H

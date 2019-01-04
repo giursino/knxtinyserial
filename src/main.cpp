@@ -110,7 +110,16 @@ void KnxTinySerialTest(void) {
   KnxTinySerial kdriver(serial_port);
 
   kdriver.Init();
-  kdriver.Read();
+  while (is_running) {
+    std::vector<unsigned char> frame;
+    if (kdriver.Read(frame)) {
+      kdriver.PrintMsg(frame);
+    }
+    else if (frame.size()) {
+      std::cout << "INVALID MESSAGE" << std::endl;
+      kdriver.PrintMsg(frame);
+    }
+  }
   kdriver.DeInit();
 
   serial_port.Close();
