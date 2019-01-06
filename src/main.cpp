@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include <chrono>
 #include <thread>
 #include <iomanip>
+#include <thread>
 
 #ifdef ENABLE_SERIAL
 #include <SerialPort.h>
@@ -97,6 +98,20 @@ void SerialPortTest(void)
 }
 
 
+void KnxTinySerialRxLoop(KnxTinySerial &kdriver) {
+  while (is_running) {
+    std::vector<unsigned char> frame;
+    if (kdriver.Read(frame)) {
+      kdriver.PrintMsg(frame);
+    }
+    else if (frame.size()) {
+      std::cout << "INVALID MESSAGE" << std::endl;
+      kdriver.PrintMsg(frame);
+    }
+    kdriver.Sleep();
+  }
+}
+
 void KnxTinySerialTest(void) {
   std::cout << "opening..." << SERIAL_PATH << std::endl;
   SerialPort serial_port( SERIAL_PATH ) ;
@@ -110,17 +125,18 @@ void KnxTinySerialTest(void) {
   KnxTinySerial kdriver(serial_port);
 
   kdriver.Init();
+  std::thread rx_thread = std::thread([&] {KnxTinySerialRxLoop(kdriver);});
+
+  uint8_t data = 0;
   while (is_running) {
-    std::vector<unsigned char> frame;
-    if (kdriver.Read(frame)) {
-      kdriver.PrintMsg(frame);
-    }
-    else if (frame.size()) {
-      std::cout << "INVALID MESSAGE" << std::endl;
-      kdriver.PrintMsg(frame);
-    }
-    kdriver.Sleep();
+    std::cout << "Send message" << std::endl;
+    data ^= 1;
+    uint8_t data_to_send = 0x80 + data;
+    kdriver.Write({0xbc, 0x20, 0x03, 0x21, 0x69, 0xe1, 0x00, data_to_send});
+    std::this_thread::sleep_for(std::chrono::seconds(3));
   }
+
+  rx_thread.join();
   kdriver.DeInit();
 
   serial_port.Close();

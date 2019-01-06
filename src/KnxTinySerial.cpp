@@ -224,24 +224,30 @@ void KnxTinySerial::DeInit()
 }
 
 
-bool KnxTinySerial::CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum) {
+uint8_t KnxTinySerial::CalculateChecksum(std::vector<uint8_t> frame) {
   uint8_t cs = 0xFF;
   for (auto i: frame) cs ^= i;
+  return cs;
+}
+
+bool KnxTinySerial::CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum) {
+  uint8_t cs = CalculateChecksum(frame);
   cs ^= checksum;
   return !cs ? true : false;
 }
 
 bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
-  const int timeout = 500;
+  const int read_timeout = 500;
   uint8_t rx_byte;
 
   rx_frame.clear();
 
   // control field or UART service
-  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!SerialReadByte(rx_byte, read_timeout)) return false;
   if (rx_byte == 0x03) {
     // UART_Reset.ind
-    SetIndividualAddress();
+    std::cerr << "Bus connection lost" << std::endl;
+    std::cout << "state: " << CheckState() << std::endl;
     return false;
   }
   if (rx_byte == 0x0B) {
@@ -258,31 +264,49 @@ bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
   rx_frame.push_back(rx_byte);
 
   // source address
-  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!SerialReadByte(rx_byte, read_timeout)) return false;
   rx_frame.push_back(rx_byte);
-  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!SerialReadByte(rx_byte, read_timeout)) return false;
   rx_frame.push_back(rx_byte);
 
   // destination address
-  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!SerialReadByte(rx_byte, read_timeout)) return false;
   rx_frame.push_back(rx_byte);
-  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!SerialReadByte(rx_byte, read_timeout)) return false;
   rx_frame.push_back(rx_byte);
 
   // DAF & length
-  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!SerialReadByte(rx_byte, read_timeout)) return false;
   rx_frame.push_back(rx_byte);
   uint8_t length = (rx_byte & 0x0F) + 1;
 
   // payload
   for (uint8_t i=0; i<length; i++) {
-    if (!SerialReadByte(rx_byte, timeout)) return false;
+    if (!SerialReadByte(rx_byte, read_timeout)) return false;
     rx_frame.push_back(rx_byte);
   }
 
   // checksum
-  if (!SerialReadByte(rx_byte, timeout)) return false;
+  if (!SerialReadByte(rx_byte, read_timeout)) return false;
   if (!CheckChecksum(rx_frame, rx_byte)) return false;
+
+  return true;
+}
+
+bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame)
+{
+  if (tx_frame.size() < 7) return false;
+
+  uint8_t byte_prefix = 0x80;
+  for (auto byte_to_send: tx_frame) {
+    m_serial_port.WriteByte(byte_prefix++);
+    m_serial_port.WriteByte(byte_to_send);
+  }
+
+  uint8_t byte_end = 0x40 + static_cast<uint8_t>(tx_frame.size());
+  m_serial_port.WriteByte(byte_end);
+  uint8_t byte_checksum = CalculateChecksum(tx_frame);
+  m_serial_port.WriteByte(byte_checksum);
 
   return true;
 }

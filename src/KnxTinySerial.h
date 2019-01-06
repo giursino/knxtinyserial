@@ -39,6 +39,7 @@ public:
   void DeInit();
 
   bool Read(std::vector<uint8_t> &rx_frame);
+  bool Write(const std::vector<uint8_t> &tx_frame);
 
   static void PrintHexByte(uint8_t byte);
   static void PrintByte(uint8_t byte);
@@ -50,6 +51,7 @@ private:
   SerialPort& m_serial_port;
   uint16_t m_individual_addr;
 
+  uint8_t CalculateChecksum(std::vector<uint8_t> frame);
   bool CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum);
 
   bool CheckState();
