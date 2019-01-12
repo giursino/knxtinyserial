@@ -95,6 +95,19 @@ void KnxTinySerial::Flush()
   catch (SerialPort::ReadTimeout){}
 }
 
+void KnxTinySerial::ConfirmMessageSent(bool was_sent)
+{
+  static int count=0;
+  count++;
+  std::cout << "count=" << count << std::endl;
+  if (count % 3 == 0) was_sent=false;
+  std::cout << "was_sent=" << was_sent << std::endl;
+  if (was_sent) {
+    std::cout << "notifing..." << std::endl;
+    m_send_confirm.notify_one();
+  }
+}
+
 
 bool KnxTinySerial::CheckState() {
   std::cout << "*** checking state procedure..." << std::endl;
@@ -251,12 +264,12 @@ bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
     return false;
   }
   if (rx_byte == 0x0B) {
-    // TODO: conferma invio messaggio, da sincronizzare
+    ConfirmMessageSent(false);
     std::cout << "L_DATA.conf: negative" << std::endl;
     return false;
   }
   if (rx_byte == 0x8B) {
-    // TODO: conferma invio messaggio, da sincronizzare
+    ConfirmMessageSent(true);
     std::cout << "L_DATA.conf: positive" << std::endl;
     return false;
   }
@@ -297,6 +310,8 @@ bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame)
 {
   if (tx_frame.size() < 7) return false;
 
+  std::unique_lock<std::mutex> l(m_send_lock);
+
   uint8_t byte_prefix = 0x80;
   for (auto byte_to_send: tx_frame) {
     m_serial_port.WriteByte(byte_prefix++);
@@ -308,6 +323,11 @@ bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame)
   uint8_t byte_checksum = CalculateChecksum(tx_frame);
   m_serial_port.WriteByte(byte_checksum);
 
+  if (m_send_confirm.wait_for(l, std::chrono::milliseconds(200)) == std::cv_status::timeout) {
+    std::cerr << "Message not confirmed." << std::endl;
+  }
+
+  l.unlock();
   return true;
 }
 

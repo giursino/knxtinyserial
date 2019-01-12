@@ -25,6 +25,8 @@ DEALINGS IN THE SOFTWARE.
 
 #include <cstdint>
 #include <SerialPort.h>
+#include <mutex>
+#include <condition_variable>
 
 extern const size_t timeout;
 extern bool is_running;
@@ -65,6 +67,10 @@ private:
   bool SerialReadByte(uint8_t& rx_byte,
                       const unsigned int ms_timeout = timeout);
   void Flush();
+
+  void ConfirmMessageSent(bool was_sent);
+  std::mutex m_send_lock;
+  std::condition_variable m_send_confirm;
 };
 
 #endif // KNXTINYSERIAL_H

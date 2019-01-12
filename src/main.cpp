@@ -108,7 +108,7 @@ void KnxTinySerialRxLoop(KnxTinySerial &kdriver) {
       std::cout << "INVALID MESSAGE" << std::endl;
       kdriver.PrintMsg(frame);
     }
-    kdriver.Sleep();
+    kdriver.Sleep(100);
   }
 }
 
