@@ -19,14 +19,6 @@ endif(ONLY_SERIAL)
 # check required libraries
 pkg_check_modules(LIBSERIAL REQUIRED libserial)
 
-link_directories(
-  ${LIBSERIAL_LIBRARY_DIRS}
-)
-
-include_directories(
-  ${LIBSERIAL_INCLUDE_DIRS}
-)
-
 add_subdirectory(lib)
 add_subdirectory(knxread)
 add_subdirectory(knxsend)
