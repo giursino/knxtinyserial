@@ -27,4 +27,5 @@ if(ENABLE_SERIAL)
     )
 endif(ENABLE_SERIAL)
 
+add_subdirectory(lib)
 add_subdirectory(src)

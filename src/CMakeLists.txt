@@ -1,7 +1,7 @@
-set(TARGET_NAME LibSerialTest)
+set(TARGET_NAME SerialTest)
 
 file(GLOB_RECURSE TARGET_SOURCES *.cpp)
-file(GLOB_RECURSE TARGET_HEADERS ${CMAKE_SOURCE_DIR}/include/*.h)
+file(GLOB_RECURSE TARGET_HEADERS ${CMAKE_SOURCE_DIR}/lib/*.h *.h)
 
 add_executable(${TARGET_NAME}
     ${TARGET_SOURCES}
@@ -14,12 +14,13 @@ if(ENABLE_SERIAL)
       ${CMAKE_CURRENT_SOURCE_DIR}
       ${LIBSERIAL_INCLUDE_DIRS}
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/lib
     )
 
     target_link_libraries(${TARGET_NAME}
       ${LIBSERIAL_LIBRARIES}
       pthread
+      LibKnxTinySerial
     )
 
     target_compile_options(${TARGET_NAME}
@@ -31,6 +32,10 @@ else()
     PUBLIC
       ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/lib
+    )
+
+    target_link_libraries(${TARGET_NAME}
+      LibKnxTinySerial
     )
 endif()

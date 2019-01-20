@@ -1,0 +1,9 @@
+set(TARGET_NAME LibKnxTinySerial)
+
+file(GLOB_RECURSE TARGET_SOURCES *.cpp)
+file(GLOB_RECURSE TARGET_HEADERS *.h)
+
+add_library(${TARGET_NAME}
+    ${TARGET_SOURCES}
+    ${TARGET_HEADERS}
+)
