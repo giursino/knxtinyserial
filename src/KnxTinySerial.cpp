@@ -29,6 +29,8 @@ DEALINGS IN THE SOFTWARE.
 #include <iomanip>
 #include "KnxTinySerial.h"
 
+const int read_timeout = 500;
+
 void KnxTinySerial::PrintHexByte(uint8_t byte) {
   std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte) << ' ';
 }
@@ -94,20 +96,6 @@ void KnxTinySerial::Flush()
   }
   catch (SerialPort::ReadTimeout){}
 }
-
-void KnxTinySerial::ConfirmMessageSent(bool was_sent)
-{
-  static int count=0;
-  count++;
-  std::cout << "count=" << count << std::endl;
-  if (count % 3 == 0) was_sent=false;
-  std::cout << "was_sent=" << was_sent << std::endl;
-  if (was_sent) {
-    std::cout << "notifing..." << std::endl;
-    m_send_confirm.notify_one();
-  }
-}
-
 
 bool KnxTinySerial::CheckState() {
   std::cout << "*** checking state procedure..." << std::endl;
@@ -250,7 +238,6 @@ bool KnxTinySerial::CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum) 
 }
 
 bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
-  const int read_timeout = 500;
   uint8_t rx_byte;
 
   rx_frame.clear();
@@ -264,12 +251,12 @@ bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
     return false;
   }
   if (rx_byte == 0x0B) {
-    ConfirmMessageSent(false);
+    rx_frame.push_back(rx_byte);
     std::cout << "L_DATA.conf: negative" << std::endl;
     return false;
   }
   if (rx_byte == 0x8B) {
-    ConfirmMessageSent(true);
+    rx_frame.push_back(rx_byte);
     std::cout << "L_DATA.conf: positive" << std::endl;
     return false;
   }
@@ -310,8 +297,6 @@ bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame)
 {
   if (tx_frame.size() < 7) return false;
 
-  std::unique_lock<std::mutex> l(m_send_lock);
-
   uint8_t byte_prefix = 0x80;
   for (auto byte_to_send: tx_frame) {
     m_serial_port.WriteByte(byte_prefix++);
@@ -323,12 +308,31 @@ bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame)
   uint8_t byte_checksum = CalculateChecksum(tx_frame);
   m_serial_port.WriteByte(byte_checksum);
 
-  if (m_send_confirm.wait_for(l, std::chrono::milliseconds(200)) == std::cv_status::timeout) {
-    std::cerr << "Message not confirmed." << std::endl;
-  }
+  // wait confirmation
+  bool success=false;
+  while (true) {
+    std::vector<uint8_t> rx_frame;
+    success = Read(rx_frame);
 
-  l.unlock();
-  return true;
+    if (rx_frame.empty()) {
+      std::cout << "timeout" << std::endl;
+      success=false;
+      break;
+    }
+
+    PrintMsg(rx_frame);
+    if ((!success) && (rx_frame[0] == 0x8B)) {
+      std::cout << "send: OK" << std::endl;
+      success=true;
+      break;
+    }
+    else if ((!success) && (rx_frame[0] == 0x0B)) {
+      std::cout << "send: ERROR" << std::endl;
+      success=false;
+      break;
+    }
+  }
+  return success;
 }
 
 #endif

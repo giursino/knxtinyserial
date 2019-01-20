@@ -125,7 +125,7 @@ void KnxTinySerialTest(void) {
   KnxTinySerial kdriver(serial_port);
 
   kdriver.Init();
-  std::thread rx_thread = std::thread([&] {KnxTinySerialRxLoop(kdriver);});
+//  std::thread rx_thread = std::thread([&] {KnxTinySerialRxLoop(kdriver);});
 
   uint8_t data = 0;
   while (is_running) {
@@ -133,10 +133,11 @@ void KnxTinySerialTest(void) {
     data ^= 1;
     uint8_t data_to_send = 0x80 + data;
     kdriver.Write({0xbc, 0x20, 0x03, 0x21, 0x69, 0xe1, 0x00, data_to_send});
+    std::cout << "sleeping..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(3));
   }
 
-  rx_thread.join();
+//  rx_thread.join();
   kdriver.DeInit();
 
   serial_port.Close();
