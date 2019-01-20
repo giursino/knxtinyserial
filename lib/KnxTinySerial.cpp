@@ -50,13 +50,13 @@ void KnxTinySerial::PrintMsg(std::vector<uint8_t> &data) {
   std::cout << std::flush;
 }
 
-void KnxTinySerial::Sleep(const unsigned int ms_timeout)
+void KnxTinySerial::Sleep(const unsigned int ms_timeout) const
 {
   if (!m_serial_port.IsDataAvailable()) Wait(ms_timeout);
 }
 
 bool KnxTinySerial::SerialReadAndCompare(const std::vector<uint8_t> &compare_buf,
-                                         const unsigned int ms_timeout)
+                                         const unsigned int ms_timeout) const
 {
   std::vector<uint8_t> receive_buf;
   try {
@@ -73,7 +73,7 @@ bool KnxTinySerial::SerialReadAndCompare(const std::vector<uint8_t> &compare_buf
   return false;
 }
 
-bool KnxTinySerial::SerialReadByte(uint8_t &rx_byte, const unsigned int ms_timeout) {
+bool KnxTinySerial::SerialReadByte(uint8_t &rx_byte, const unsigned int ms_timeout) const {
   try {
     rx_byte = m_serial_port.ReadByte(ms_timeout);
     return true;
@@ -82,7 +82,7 @@ bool KnxTinySerial::SerialReadByte(uint8_t &rx_byte, const unsigned int ms_timeo
   return false;
 }
 
-void KnxTinySerial::Wait(const unsigned int ms_timeout)
+void KnxTinySerial::Wait(const unsigned int ms_timeout) const
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(ms_timeout));
 }
@@ -96,7 +96,7 @@ void KnxTinySerial::Flush()
   catch (SerialPort::ReadTimeout){}
 }
 
-bool KnxTinySerial::CheckState() {
+bool KnxTinySerial::CheckState() const{
   std::cout << "*** checking state procedure..." << std::endl;
   std::cout << "sending U_State.req..." << std::endl;
   m_serial_port.WriteByte(0x02);
@@ -109,7 +109,7 @@ bool KnxTinySerial::CheckState() {
 }
 
 
-void KnxTinySerial::Reset() {
+void KnxTinySerial::Reset() const {
   bool retry = true;
 
   while(retry) {
@@ -224,19 +224,19 @@ void KnxTinySerial::DeInit()
 }
 
 
-uint8_t KnxTinySerial::CalculateChecksum(std::vector<uint8_t> frame) {
+uint8_t KnxTinySerial::CalculateChecksum(std::vector<uint8_t> frame) const {
   uint8_t cs = 0xFF;
   for (auto i: frame) cs ^= i;
   return cs;
 }
 
-bool KnxTinySerial::CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum) {
+bool KnxTinySerial::CheckChecksum(std::vector<uint8_t> frame, uint8_t checksum) const {
   uint8_t cs = CalculateChecksum(frame);
   cs ^= checksum;
   return !cs ? true : false;
 }
 
-bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
+bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) const {
   uint8_t rx_byte;
 
   rx_frame.clear();
@@ -292,7 +292,7 @@ bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) {
   return true;
 }
 
-bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame)
+bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame) const
 {
   if (tx_frame.size() < 7) return false;
 
@@ -307,29 +307,5 @@ bool KnxTinySerial::Write(const std::vector<uint8_t>& tx_frame)
   uint8_t byte_checksum = CalculateChecksum(tx_frame);
   m_serial_port.WriteByte(byte_checksum);
 
-  // wait confirmation
-  bool success=false;
-  while (true) {
-    std::vector<uint8_t> rx_frame;
-    success = Read(rx_frame);
-
-    if (rx_frame.empty()) {
-      std::cout << "timeout" << std::endl;
-      success=false;
-      break;
-    }
-
-    PrintMsg(rx_frame);
-    if ((!success) && (rx_frame[0] == 0x8B)) {
-      std::cout << "send: OK" << std::endl;
-      success=true;
-      break;
-    }
-    else if ((!success) && (rx_frame[0] == 0x0B)) {
-      std::cout << "send: ERROR" << std::endl;
-      success=false;
-      break;
-    }
-  }
-  return success;
+  return true;
 }

@@ -37,6 +37,37 @@ DEALINGS IN THE SOFTWARE.
 
 bool is_running=true;
 
+bool send(const KnxTinySerial &kdriver, const std::vector<uint8_t> &tx_frame) {
+  //send
+  kdriver.Write(tx_frame);
+
+  // wait confirmation
+  bool success=false;
+  while (true) {
+    std::vector<uint8_t> rx_frame;
+    success = kdriver.Read(rx_frame);
+
+    if (rx_frame.empty()) {
+      std::cout << "timeout" << std::endl;
+      success=false;
+      break;
+    }
+
+    kdriver.PrintMsg(rx_frame);
+    if ((!success) && (rx_frame[0] == 0x8B)) {
+      std::cout << "send: OK" << std::endl;
+      success=true;
+      break;
+    }
+    else if ((!success) && (rx_frame[0] == 0x0B)) {
+      std::cout << "send: ERROR" << std::endl;
+      success=false;
+      break;
+    }
+  }
+  return success;
+}
+
 
 int main()
 {
@@ -60,7 +91,8 @@ int main()
     std::cout << "Send message" << std::endl;
     data ^= 1;
     uint8_t data_to_send = 0x80 + data;
-    kdriver.Write({0xbc, 0x20, 0x03, 0x21, 0x69, 0xe1, 0x00, data_to_send});
+    send(kdriver, {0xbc, 0x20, 0x03, 0x21, 0x69, 0xe1, 0x00, data_to_send});
+
     std::cout << "sleeping..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(3));
   }
