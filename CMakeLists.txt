@@ -7,25 +7,25 @@ project(LibSerialTestProject)
 set (CMAKE_CXX_STANDARD 11)
 
 # add Test option
-option(ENABLE_SERIAL "Enable serial" OFF)
+option(ONLY_SERIAL "Enable only serial compilation. Do not use KnxTinySerial." OFF)
 
 # check pkg-config support
 find_package(PkgConfig REQUIRED)
 
-if(ENABLE_SERIAL)
-    add_definitions(-DENABLE_SERIAL)
+if(ONLY_SERIAL)
+    add_definitions(-DONLY_SERIAL)
+endif(ONLY_SERIAL)
 
-    # check required libraries
-    pkg_check_modules(LIBSERIAL REQUIRED libserial)
+# check required libraries
+pkg_check_modules(LIBSERIAL REQUIRED libserial)
 
-    link_directories(
-        ${LIBSERIAL_LIBRARY_DIRS}
-    )
+link_directories(
+  ${LIBSERIAL_LIBRARY_DIRS}
+)
 
-    include_directories(
-        ${LIBSERIAL_INCLUDE_DIRS}
-    )
-endif(ENABLE_SERIAL)
+include_directories(
+  ${LIBSERIAL_INCLUDE_DIRS}
+)
 
 add_subdirectory(lib)
 add_subdirectory(knxread)

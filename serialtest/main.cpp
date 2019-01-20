@@ -27,8 +27,6 @@ DEALINGS IN THE SOFTWARE.
 #include <thread>
 #include <iomanip>
 #include <thread>
-
-#ifdef ENABLE_SERIAL
 #include <SerialPort.h>
 #include "KnxTinySerial.h"
 
@@ -39,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
 
 bool is_running=true;
 
-
+#ifdef ONLY_SERIAL
 void SerialInit(SerialPort& serial_port) {
 
   std::cout << "Init serial..." << std::endl;
@@ -96,6 +94,7 @@ void SerialPortTest(void)
     serial_port.Close();
 }
 
+#else
 
 void KnxTinySerialRxLoop(KnxTinySerial &kdriver) {
   while (is_running) {
@@ -124,7 +123,7 @@ void KnxTinySerialTest(void) {
   KnxTinySerial kdriver(serial_port);
 
   kdriver.Init();
-//  std::thread rx_thread = std::thread([&] {KnxTinySerialRxLoop(kdriver);});
+  std::thread rx_thread = std::thread([&] {KnxTinySerialRxLoop(kdriver);});
 
   uint8_t data = 0;
   while (is_running) {
@@ -136,7 +135,7 @@ void KnxTinySerialTest(void) {
     std::this_thread::sleep_for(std::chrono::seconds(3));
   }
 
-//  rx_thread.join();
+  rx_thread.join();
   kdriver.DeInit();
 
   serial_port.Close();
@@ -149,9 +148,10 @@ int main()
 {
   std::cout << "Starting..." << std::endl;
 
-#ifdef ENABLE_SERIAL
-//  SerialPortTest();
-    KnxTinySerialTest();
+#ifdef ONLY_SERIAL
+  SerialPortTest();
+#else
+  KnxTinySerialTest();
 #endif
 
   std::cout << "done." << std::endl;

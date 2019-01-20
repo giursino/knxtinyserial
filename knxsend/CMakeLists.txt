@@ -11,8 +11,8 @@ add_executable(${TARGET_NAME}
 target_include_directories(${TARGET_NAME}
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${LIBSERIAL_INCLUDE_DIRS}
   PRIVATE
+    ${LIBSERIAL_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/lib
 )
 
