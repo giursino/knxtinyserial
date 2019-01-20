@@ -30,6 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "KnxTinySerial.h"
 
 const int read_timeout = 500;
+const size_t timeout = 2000;
 
 void KnxTinySerial::PrintHexByte(uint8_t byte) {
   std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte) << ' ';

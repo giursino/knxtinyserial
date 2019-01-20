@@ -38,7 +38,6 @@ DEALINGS IN THE SOFTWARE.
 
 
 bool is_running=true;
-const size_t timeout=2000;
 
 
 void SerialInit(SerialPort& serial_port) {

@@ -28,4 +28,6 @@ if(ENABLE_SERIAL)
 endif(ENABLE_SERIAL)
 
 add_subdirectory(lib)
-add_subdirectory(src)
+add_subdirectory(knxread)
+add_subdirectory(knxsend)
+add_subdirectory(serialtest)
