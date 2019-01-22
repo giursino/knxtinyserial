@@ -26,6 +26,9 @@ DEALINGS IN THE SOFTWARE.
 #include <thread>
 #include <iomanip>
 #include "KnxTinySerial.h"
+#include "log.h"
+
+using namespace mylog;
 
 const int read_timeout = 500;
 const size_t timeout = 2000;
@@ -46,7 +49,7 @@ bool KnxTinySerial::SerialReadAndCompare(const std::vector<uint8_t> &compare_buf
     }
   }
   catch (SerialPort::ReadTimeout){
-    std::cout << "no response" << std::endl;
+    FILE_LOG(logDEBUG) << "no response";
   }
 
   return false;
@@ -76,14 +79,14 @@ void KnxTinySerial::Flush()
 }
 
 bool KnxTinySerial::CheckState() const{
-  std::cout << "*** checking state procedure..." << std::endl;
-  std::cout << "sending U_State.req..." << std::endl;
+  FILE_LOG(logDEBUG) << "*** checking state procedure...";
+  FILE_LOG(logDEBUG) << "sending U_State.req...";
   m_serial_port.WriteByte(0x02);
-  std::cout << "waiting..." << std::endl;
+  FILE_LOG(logDEBUG) << "waiting...";
   if (SerialReadAndCompare({0x07})) {
       return true;
   }
-  std::cout << "error state" << std::endl;
+  FILE_LOG(logDEBUG) << "error state";
   return false;
 }
 
@@ -92,15 +95,15 @@ void KnxTinySerial::Reset() const {
   bool retry = true;
 
   while(retry) {
-    std::cout << "*** starting reset procedure..." << std::endl;
-    std::cout << "sending U_Reset.req..." << std::endl;
+    FILE_LOG(logDEBUG) << "*** starting reset procedure...";
+    FILE_LOG(logDEBUG) << "sending U_Reset.req...";
     m_serial_port.WriteByte(0x01);
-    std::cout << "waiting U_Reset.ind (5s timeout)..." << std::endl;
+    FILE_LOG(logDEBUG) << "waiting U_Reset.ind (5s timeout)...";
     if (SerialReadAndCompare({0x03}, 5000)) {
         retry = false;
     }
     else {
-      std::cout << "invalid response" << std::endl;
+      FILE_LOG(logDEBUG) << "invalid response";
     }
   }
 
@@ -112,40 +115,40 @@ void KnxTinySerial::SetIndividualAddress() {
   uint8_t addr_low = (m_individual_addr & 0x00FF);
 
   while(retry) {
-    std::cout << "*** setting individual address procedure..." << std::endl;;
+    FILE_LOG(logDEBUG) << "*** setting individual address procedure...";;
     Wait();
     Flush();
 
-    std::cout << "sending U_WriteProperty.req to disable AUTO IACK..." << std::endl;
+    FILE_LOG(logDEBUG) << "sending U_WriteProperty.req to disable AUTO IACK...";
     m_serial_port.WriteByte(0x22);
     m_serial_port.WriteByte(0x00);
 
-    std::cout << "sending U_ReadProperty.req..." << std::endl;
+    FILE_LOG(logDEBUG) << "sending U_ReadProperty.req...";
     m_serial_port.WriteByte(0x1A);
-    std::cout << "waiting..." << std::endl;
+    FILE_LOG(logDEBUG) << "waiting...";
     if (!SerialReadAndCompare({0x1A, 0x00})) {
-      std::cout << "response invalid" << std::endl;
+      FILE_LOG(logDEBUG) << "response invalid";
       continue;
     }
 
-    std::cout << "sending U_WriteAHigh.req..." << std::endl;
+    FILE_LOG(logDEBUG) << "sending U_WriteAHigh.req...";
     m_serial_port.WriteByte(0x1F);
     m_serial_port.WriteByte(addr_high);
 
-    std::cout << "sending U_WriteALow.req..." << std::endl;
+    FILE_LOG(logDEBUG) << "sending U_WriteALow.req...";
     m_serial_port.WriteByte(0x1E);
     m_serial_port.WriteByte(addr_low);
 
-    std::cout << "sending U_WriteProperty.req to enable AUTO IACK..." << std::endl;
+    FILE_LOG(logDEBUG) << "sending U_WriteProperty.req to enable AUTO IACK...";
     m_serial_port.WriteByte(0x22);
     m_serial_port.WriteByte(0x01);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    std::cout << "sending U_ReadProperty.req..." << std::endl;
+    FILE_LOG(logDEBUG) << "sending U_ReadProperty.req...";
     m_serial_port.WriteByte(0x1A);
-    std::cout << "waiting..." << std::endl;
+    FILE_LOG(logDEBUG) << "waiting...";
     if (!SerialReadAndCompare({0x1A, 0x01})) {
-      std::cout << "response invalid" << std::endl;
+      FILE_LOG(logDEBUG) << "response invalid";
       continue;
     }
 
@@ -168,20 +171,20 @@ void KnxTinySerial::Init() {
   bool retry = true;
 
   if (m_serial_port.IsOpen() == false) {
-    std::cerr << "WARNING: serial port not open!" << std::endl;
+    std::cerr << "WARNING: serial port not open!";
     return;
   }
 
-  std::cout << "Init KNX Tiny Serial..." << std::endl;
-  std::cout << "setting baudrate..." << std::endl;
+  FILE_LOG(logDEBUG) << "Init KNX Tiny Serial...";
+  FILE_LOG(logDEBUG) << "setting baudrate...";
   m_serial_port.SetBaudRate( SerialPort::BaudRate::BAUD_19200 );
-  std::cout << "setting char size..." << std::endl;
+  FILE_LOG(logDEBUG) << "setting char size...";
   m_serial_port.SetCharSize( SerialPort::CharacterSize::CHAR_SIZE_8 );
-  std::cout << "setting parity..." << std::endl;
+  FILE_LOG(logDEBUG) << "setting parity...";
   m_serial_port.SetParity( SerialPort::Parity::PARITY_EVEN );
-  std::cout << "setting stop bits..." << std::endl;
+  FILE_LOG(logDEBUG) << "setting stop bits...";
   m_serial_port.SetNumOfStopBits(SerialPort::StopBits::STOP_BITS_1);
-  std::cout << "setting hw control..." << std::endl;
+  FILE_LOG(logDEBUG) << "setting hw control...";
   m_serial_port.SetFlowControl(SerialPort::FlowControl::FLOW_CONTROL_NONE);
 
 
@@ -189,13 +192,13 @@ void KnxTinySerial::Init() {
     Reset();
     SetIndividualAddress();
     if (CheckState() == false) {
-      std::cerr << "error checking state" << std::endl;
+      std::cerr << "error checking state";
       continue;
     }
     retry = false;
   }
 
-  std::cout << "Init done." << std::endl;
+  FILE_LOG(logDEBUG) << "Init done.";
 }
 
 void KnxTinySerial::DeInit()
@@ -224,18 +227,18 @@ bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) const {
   if (!SerialReadByte(rx_byte, read_timeout)) return false;
   if (rx_byte == 0x03) {
     // UART_Reset.ind
-    std::cerr << "Bus connection lost" << std::endl;
-    std::cout << "state: " << CheckState() << std::endl;
+    std::cerr << "Bus connection lost";
+    FILE_LOG(logDEBUG) << "state: " << CheckState();
     return false;
   }
   if (rx_byte == 0x0B) {
     rx_frame.push_back(rx_byte);
-    std::cout << "L_DATA.conf: negative" << std::endl;
+    FILE_LOG(logDEBUG) << "L_DATA.conf: negative";
     return false;
   }
   if (rx_byte == 0x8B) {
     rx_frame.push_back(rx_byte);
-    std::cout << "L_DATA.conf: positive" << std::endl;
+    FILE_LOG(logDEBUG) << "L_DATA.conf: positive";
     return false;
   }
   if ((rx_byte & 0xD3) != 0x90) return false;
