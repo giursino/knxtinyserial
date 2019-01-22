@@ -1,0 +1,8 @@
+// The configured options and settings managed by CMake
+#define VERSION_MAJOR @VERSION_MAJOR@
+#define VERSION_MINOR @VERSION_MINOR@
+#define VERSION_PATCH @VERSION_PATCH@
+
+#define GIT_REVISION "@GIT_REVISION@"
+
+#define PROJECT_NAME "@PROJECT_NAME@"

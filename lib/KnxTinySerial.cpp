@@ -35,14 +35,14 @@ void KnxTinySerial::PrintHexByte(uint8_t byte) {
 }
 
 void KnxTinySerial::PrintByte(uint8_t byte) {
-  std::cout << "Read: ";
+  std::cout << "byte: ";
   PrintHexByte(byte);
   std::cout << std::endl;
 }
 
 void KnxTinySerial::PrintMsg(std::vector<uint8_t> &data) {
   if (data.size() != 0) {
-    std::cout << "Read: ";
+    std::cout << "msg: ";
     for (auto i: data)
       PrintHexByte(i);
     std::cout << std::endl;

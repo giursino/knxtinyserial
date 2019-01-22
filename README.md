@@ -16,7 +16,9 @@ to send and read to/from KNX bus.
 * CMAKE >= 2.8
 * pkgconfig
 * libserial-dev (>= 0.6.0~rc2+svn122-4)
-
+* libboost-filesystem1.62-dev
+* libboost-program-options1.62-dev
+ 
 ### Configure, build and install
 ```
 git clone git@github.com:giursino/knxtinyserial.git

@@ -29,10 +29,8 @@ DEALINGS IN THE SOFTWARE.
 #include <thread>
 #include <SerialPort.h>
 #include "KnxTinySerial.h"
-
-
-//#define SERIAL_PATH "/dev/ttyUSB0"
-#define SERIAL_PATH "/dev/serial0"
+#include "Settings.h"
+#include "Utils.h"
 
 
 bool is_running=true;
@@ -68,39 +66,44 @@ bool send(const KnxTinySerial &kdriver, const std::vector<uint8_t> &tx_frame) {
   return success;
 }
 
+int main(int argc, char* argv[]) {
 
-int main()
-{
-  std::cout << "Starting..." << std::endl;
+  Settings settings;
 
-  std::cout << "opening..." << SERIAL_PATH << std::endl;
-  SerialPort serial_port( SERIAL_PATH ) ;
-  serial_port.Open();
+  ExitCodes ret = settings.ParseCommandLineArguments(argc, argv);
+  if (ret != ExitCodes::Ok) return as_integer(ret);
+
+  std::cout << "opening..." << settings.serial << std::endl;
+  SerialPort serial_port(settings.serial);
+
+  try {
+    serial_port.Open();
+  } catch (std::exception) {
+    std::cout << "ERROR: cannot open serial port" << std::endl;
+    return as_integer(ExitCodes::GenericError);
+  }
 
   if (serial_port.IsOpen() == false) {
-    std::cout << "WARNING: serial port not open!" << std::endl;
-    return EXIT_FAILURE;
+    std::cout << "ERROR: serial port not open!" << std::endl;
+    return as_integer(ExitCodes::GenericError);
   }
 
   KnxTinySerial kdriver(serial_port);
 
   kdriver.Init();
 
-  uint8_t data = 0;
-  while (is_running) {
-    std::cout << "Send message" << std::endl;
-    data ^= 1;
-    uint8_t data_to_send = 0x80 + data;
-    send(kdriver, {0xbc, 0x20, 0x03, 0x21, 0x69, 0xe1, 0x00, data_to_send});
+  std::cout << "Send message: " << ByteVectorToHexString(settings.tx_message) << std::endl;
 
-    std::cout << "sleeping..." << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-  }
+  bool success = send(kdriver, settings.tx_message);
 
   kdriver.DeInit();
 
   serial_port.Close();
 
   std::cout << "done." << std::endl;
-  return EXIT_SUCCESS;
+
+  if (success)
+    return as_integer(ExitCodes::Ok);
+  else
+    return  as_integer(ExitCodes::GenericError);
 }
