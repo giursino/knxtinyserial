@@ -30,7 +30,9 @@ DEALINGS IN THE SOFTWARE.
 #include <SerialPort.h>
 #include "KnxTinySerial.h"
 #include "Utils.h"
+#include "log.h"
 
+using namespace mylog;
 
 //#define SERIAL_PATH "/dev/ttyUSB0"
 #define SERIAL_PATH "/dev/serial0"
@@ -43,14 +45,14 @@ const size_t loop_ms=100;
 
 int main()
 {
-  std::cout << "Starting..." << std::endl;
+  FILE_LOG(logINFO) << "Starting...";
 
-  std::cout << "opening..." << SERIAL_PATH << std::endl;
+  FILE_LOG(logDEBUG) << "opening..." << SERIAL_PATH;
   SerialPort serial_port( SERIAL_PATH ) ;
   serial_port.Open();
 
   if (serial_port.IsOpen() == false) {
-    std::cout << "WARNING: serial port not open!" << std::endl;
+    FILE_LOG(logWARNING) << "WARNING: serial port not open!";
     return EXIT_FAILURE;
   }
 
@@ -64,7 +66,7 @@ int main()
       PrintMsg(frame);
     }
     else if (frame.size()) {
-      std::cout << "INVALID MESSAGE" << std::endl;
+      FILE_LOG(logWARNING) << "INVALID MESSAGE";
       PrintMsg(frame);
     }
     kdriver.Sleep(loop_ms);
@@ -74,6 +76,6 @@ int main()
 
   serial_port.Close();
 
-  std::cout << "done." << std::endl;
+  FILE_LOG(logINFO) << "done." << std::endl;
   return EXIT_SUCCESS;
 }

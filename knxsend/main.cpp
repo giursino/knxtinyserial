@@ -31,7 +31,9 @@ DEALINGS IN THE SOFTWARE.
 #include "KnxTinySerial.h"
 #include "Settings.h"
 #include "Utils.h"
+#include "log.h"
 
+using namespace mylog;
 
 bool is_running=true;
 
@@ -46,19 +48,19 @@ bool send(const KnxTinySerial &kdriver, const std::vector<uint8_t> &tx_frame) {
     success = kdriver.Read(rx_frame);
 
     if (rx_frame.empty()) {
-      std::cout << "timeout" << std::endl;
+      FILE_LOG(logINFO) << "timeout";
       success=false;
       break;
     }
 
     PrintMsg(rx_frame);
     if ((!success) && (rx_frame[0] == 0x8B)) {
-      std::cout << "send: OK" << std::endl;
+      FILE_LOG(logINFO) << "send: OK";
       success=true;
       break;
     }
     else if ((!success) && (rx_frame[0] == 0x0B)) {
-      std::cout << "send: ERROR" << std::endl;
+      FILE_LOG(logINFO) << "send: ERROR";
       success=false;
       break;
     }
@@ -73,18 +75,23 @@ int main(int argc, char* argv[]) {
   ExitCodes ret = settings.ParseCommandLineArguments(argc, argv);
   if (ret != ExitCodes::Ok) return as_integer(ret);
 
-  std::cout << "opening..." << settings.serial << std::endl;
+  if (settings.verbose)
+    FILELog::ReportingLevel() = logTRACE;
+  else
+    FILELog::ReportingLevel() = logINFO;
+
+  FILE_LOG(logINFO) << "Opening..." << settings.serial;
   SerialPort serial_port(settings.serial);
 
   try {
     serial_port.Open();
   } catch (std::exception) {
-    std::cout << "ERROR: cannot open serial port" << std::endl;
+    FILE_LOG(logERROR) << "ERROR: cannot open serial port";
     return as_integer(ExitCodes::GenericError);
   }
 
   if (serial_port.IsOpen() == false) {
-    std::cout << "ERROR: serial port not open!" << std::endl;
+    FILE_LOG(logERROR) << "ERROR: serial port not open!";
     return as_integer(ExitCodes::GenericError);
   }
 
@@ -92,7 +99,7 @@ int main(int argc, char* argv[]) {
 
   kdriver.Init();
 
-  std::cout << "Send message: " << ByteVectorToHexString(settings.tx_message) << std::endl;
+  FILE_LOG(logINFO) << "Send message: " << ByteVectorToHexString(settings.tx_message);
 
   bool success = send(kdriver, settings.tx_message);
 
@@ -100,7 +107,7 @@ int main(int argc, char* argv[]) {
 
   serial_port.Close();
 
-  std::cout << "done." << std::endl;
+  FILE_LOG(logINFO) << "done.";
 
   if (success)
     return as_integer(ExitCodes::Ok);
