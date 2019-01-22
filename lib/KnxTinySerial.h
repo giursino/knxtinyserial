@@ -44,10 +44,6 @@ public:
   bool Read(std::vector<uint8_t> &rx_frame) const;
   bool Write(const std::vector<uint8_t> &tx_frame) const;
 
-  static void PrintHexByte(uint8_t byte);
-  static void PrintByte(uint8_t byte);
-  static void PrintMsg(std::vector<uint8_t>& data);
-
   void Sleep(const unsigned int ms_timeout = timeout) const;
 
 private:

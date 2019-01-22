@@ -51,7 +51,7 @@ bool send(const KnxTinySerial &kdriver, const std::vector<uint8_t> &tx_frame) {
       break;
     }
 
-    kdriver.PrintMsg(rx_frame);
+    PrintMsg(rx_frame);
     if ((!success) && (rx_frame[0] == 0x8B)) {
       std::cout << "send: OK" << std::endl;
       success=true;

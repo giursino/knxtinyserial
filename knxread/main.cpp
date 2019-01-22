@@ -29,6 +29,7 @@ DEALINGS IN THE SOFTWARE.
 #include <thread>
 #include <SerialPort.h>
 #include "KnxTinySerial.h"
+#include "Utils.h"
 
 
 //#define SERIAL_PATH "/dev/ttyUSB0"
@@ -60,11 +61,11 @@ int main()
   while (is_running) {
     std::vector<unsigned char> frame;
     if (kdriver.Read(frame)) {
-      kdriver.PrintMsg(frame);
+      PrintMsg(frame);
     }
     else if (frame.size()) {
       std::cout << "INVALID MESSAGE" << std::endl;
-      kdriver.PrintMsg(frame);
+      PrintMsg(frame);
     }
     kdriver.Sleep(loop_ms);
   }

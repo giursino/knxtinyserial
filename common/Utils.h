@@ -27,6 +27,10 @@ DEALINGS IN THE SOFTWARE.
 #include <vector>
 #include <iostream>
 
+void PrintHexByte(uint8_t byte);
+void PrintByte(uint8_t byte);
+void PrintMsg(std::vector<uint8_t> &data);
+
 std::string ByteToHexString(const uint8_t& byte);
 std::string ByteVectorToHexString(const std::vector<uint8_t>& byte_vector);
 std::vector<uint8_t> HexStringToByteVector(const std::string& hex_string);

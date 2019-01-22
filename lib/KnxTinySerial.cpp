@@ -30,26 +30,6 @@ DEALINGS IN THE SOFTWARE.
 const int read_timeout = 500;
 const size_t timeout = 2000;
 
-void KnxTinySerial::PrintHexByte(uint8_t byte) {
-  std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte) << ' ';
-}
-
-void KnxTinySerial::PrintByte(uint8_t byte) {
-  std::cout << "byte: ";
-  PrintHexByte(byte);
-  std::cout << std::endl;
-}
-
-void KnxTinySerial::PrintMsg(std::vector<uint8_t> &data) {
-  if (data.size() != 0) {
-    std::cout << "msg: ";
-    for (auto i: data)
-      PrintHexByte(i);
-    std::cout << std::endl;
-  }
-  std::cout << std::flush;
-}
-
 void KnxTinySerial::Sleep(const unsigned int ms_timeout) const
 {
   if (!m_serial_port.IsDataAvailable()) Wait(ms_timeout);
@@ -61,7 +41,6 @@ bool KnxTinySerial::SerialReadAndCompare(const std::vector<uint8_t> &compare_buf
   std::vector<uint8_t> receive_buf;
   try {
     m_serial_port.Read(receive_buf, compare_buf.size(), ms_timeout);
-    PrintMsg(receive_buf);
     if (receive_buf == compare_buf) {
       return true;
     }
