@@ -171,7 +171,7 @@ void KnxTinySerial::Init() {
   bool retry = true;
 
   if (m_serial_port.IsOpen() == false) {
-    std::cerr << "WARNING: serial port not open!";
+    FILE_LOG(logDEBUG) << "WARNING: serial port not open!";
     return;
   }
 
@@ -192,7 +192,7 @@ void KnxTinySerial::Init() {
     Reset();
     SetIndividualAddress();
     if (CheckState() == false) {
-      std::cerr << "error checking state";
+      FILE_LOG(logDEBUG) << "error checking state";
       continue;
     }
     retry = false;
@@ -227,7 +227,7 @@ bool KnxTinySerial::Read(std::vector<uint8_t> &rx_frame) const {
   if (!SerialReadByte(rx_byte, read_timeout)) return false;
   if (rx_byte == 0x03) {
     // UART_Reset.ind
-    std::cerr << "Bus connection lost";
+    FILE_LOG(logDEBUG) << "Bus connection lost";
     FILE_LOG(logDEBUG) << "state: " << CheckState();
     return false;
   }

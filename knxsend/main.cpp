@@ -53,7 +53,7 @@ bool send(const KnxTinySerial &kdriver, const std::vector<uint8_t> &tx_frame) {
       break;
     }
 
-    PrintMsg(rx_frame);
+    FILE_LOG(logDEBUG) << ByteVectorToHexString(rx_frame);
     if ((!success) && (rx_frame[0] == 0x8B)) {
       FILE_LOG(logINFO) << "send: OK";
       success=true;
