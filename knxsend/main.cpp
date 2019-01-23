@@ -35,8 +35,6 @@ DEALINGS IN THE SOFTWARE.
 
 using namespace mylog;
 
-bool is_running=true;
-
 bool send(const KnxTinySerial &kdriver, const std::vector<uint8_t> &tx_frame) {
   //send
   kdriver.Write(tx_frame);
