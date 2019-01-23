@@ -15,8 +15,6 @@ add_executable(${TARGET_NAME}
     ${TARGET_HEADERS}
 )
 
-message("icludes: ${TARGET_HEADERS}")
-
 target_include_directories(${TARGET_NAME}
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}

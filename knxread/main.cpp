@@ -31,29 +31,38 @@ DEALINGS IN THE SOFTWARE.
 #include "KnxTinySerial.h"
 #include "Utils.h"
 #include "log.h"
+#include "Settings.h"
 
 using namespace mylog;
-
-//#define SERIAL_PATH "/dev/ttyUSB0"
-#define SERIAL_PATH "/dev/serial0"
-
 
 bool is_running=true;
 const size_t loop_ms=100;
 
+int main(int argc, char* argv[]) {
 
+  Settings settings;
 
-int main()
-{
-  FILE_LOG(logINFO) << "Starting...";
+  ExitCodes ret = settings.ParseCommandLineArguments(argc, argv);
+  if (ret != ExitCodes::Ok) return as_integer(ret);
 
-  FILE_LOG(logDEBUG) << "opening..." << SERIAL_PATH;
-  SerialPort serial_port( SERIAL_PATH ) ;
-  serial_port.Open();
+  if (settings.verbose)
+    FILELog::ReportingLevel() = logTRACE;
+  else
+    FILELog::ReportingLevel() = logINFO;
+
+  FILE_LOG(logINFO) << "Opening..." << settings.serial;
+  SerialPort serial_port(settings.serial);
+
+  try {
+    serial_port.Open();
+  } catch (std::exception) {
+    FILE_LOG(logERROR) << "ERROR: cannot open serial port";
+    return as_integer(ExitCodes::GenericError);
+  }
 
   if (serial_port.IsOpen() == false) {
-    FILE_LOG(logWARNING) << "WARNING: serial port not open!";
-    return EXIT_FAILURE;
+    FILE_LOG(logERROR) << "ERROR: serial port not open!";
+    return as_integer(ExitCodes::GenericError);
   }
 
   KnxTinySerial kdriver(serial_port);

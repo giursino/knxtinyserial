@@ -39,7 +39,6 @@ ExitCodes Settings::ParseCommandLineArguments(int argc, char* argv[]) {
         ("help,h", "Help Screen")
         ("verbose,v", bool_switch(&verbose)->default_value(false), "Verbose")
         ("version", "Print version and exit")
-        ("message,m", value<std::string>(), "Message to send")
         ("serial,s", value<std::string>(&serial)->default_value("/dev/serial0"), "Serial port")
         ;
 
@@ -57,26 +56,11 @@ ExitCodes Settings::ParseCommandLineArguments(int argc, char* argv[]) {
       return ExitCodes::EarlyExit;
     }
 
-    if (!vm.count("message")) {
-      std::cerr << "\"message\" missing" << std::endl;
-      PrintHelp(generalOptions);
-      return ExitCodes::InvalidArgument;
-    }
-    else {
-      std::string message = vm["message"].as<std::string>();
-      // remove space
-      auto it = remove_if(message.begin(), message.end(), isspace);
-      message.erase(it, message.end());
-      tx_message = HexStringToByteVector(message);
-    }
-
-
     if (verbose) {
       std::cout << "Settings: " << std::endl;
       std::cout << "--------- " << std::endl;
       std::cout << "verbose: " << verbose << std::endl;
       std::cout << "serial: " << serial << std::endl;
-      std::cout << "message_to_send: " << ByteVectorToHexString(tx_message) << std::endl;
       std::cout << "--------- " << std::endl;
     }
 

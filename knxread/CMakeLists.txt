@@ -19,12 +19,14 @@ target_include_directories(${TARGET_NAME}
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE
+    ${Boost_INCLUDE_DIR}
     ${LIBSERIAL_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/common
 )
 
 target_link_libraries(${TARGET_NAME}
+    ${Boost_LIBRARIES}
     ${LIBSERIAL_LIBRARIES}
     pthread
     LibKnxTinySerial

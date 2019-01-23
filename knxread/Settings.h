@@ -29,7 +29,6 @@ public:
   ExitCodes ParseCommandLineArguments(int argc, char* argv[]);
 
   bool verbose;
-  std::vector<uint8_t> tx_message;
   std::string serial;
 
 private:
