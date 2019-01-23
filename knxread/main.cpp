@@ -32,11 +32,18 @@ DEALINGS IN THE SOFTWARE.
 #include "Utils.h"
 #include "log.h"
 #include "Settings.h"
+#include <signal.h>
 
 using namespace mylog;
 
-bool is_running=true;
+sig_atomic_t is_running = 1;
+
 const size_t loop_ms=100;
+
+void sig_handler (int param)
+{
+  is_running = 0;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -49,6 +56,9 @@ int main(int argc, char* argv[]) {
     FILELog::ReportingLevel() = logTRACE;
   else
     FILELog::ReportingLevel() = logINFO;
+
+  void (*prev_handler)(int);
+  prev_handler = signal (SIGINT, sig_handler);
 
   FILE_LOG(logINFO) << "Opening..." << settings.serial;
   SerialPort serial_port(settings.serial);
@@ -69,7 +79,7 @@ int main(int argc, char* argv[]) {
 
   kdriver.Init();
 
-  while (is_running) {
+  while (is_running == 1) {
     std::vector<unsigned char> frame;
     if (kdriver.Read(frame)) {
       PrintMsg(frame);

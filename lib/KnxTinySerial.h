@@ -29,7 +29,6 @@ DEALINGS IN THE SOFTWARE.
 #include <condition_variable>
 
 extern const size_t timeout;
-extern bool is_running;
 
 class KnxTinySerial
 {
