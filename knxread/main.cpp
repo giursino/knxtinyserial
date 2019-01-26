@@ -27,22 +27,28 @@ DEALINGS IN THE SOFTWARE.
 #include <thread>
 #include <iomanip>
 #include <thread>
+#include <signal.h>
 #include <SerialPort.h>
 #include "KnxTinySerial.h"
 #include "Utils.h"
 #include "log.h"
 #include "Settings.h"
-#include <signal.h>
+#include "ReadManager.h"
 
 using namespace mylog;
 
-sig_atomic_t is_running = 1;
+static bool exit_flag = false;
+static std::condition_variable exit_cond;
+static std::mutex exit_mutex;
 
-const size_t loop_ms=100;
-
-void sig_handler (int param)
-{
-  is_running = 0;
+void SignalHandler(int s) {
+  if (s == SIGINT) {
+    std::lock_guard<std::mutex> lock(exit_mutex);
+    exit_flag = true;
+    exit_cond.notify_one();
+  } else {
+    exit(EXIT_FAILURE);
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -57,8 +63,12 @@ int main(int argc, char* argv[]) {
   else
     FILELog::ReportingLevel() = logINFO;
 
-  void (*prev_handler)(int);
-  prev_handler = signal (SIGINT, sig_handler);
+  // Initialize signal handling
+  struct sigaction action;
+  action.sa_handler = SignalHandler;
+  sigemptyset(&action.sa_mask);
+  action.sa_flags = 0;
+  sigaction(SIGINT, &action, nullptr);
 
   FILE_LOG(logINFO) << "Opening..." << settings.serial;
   SerialPort serial_port(settings.serial);
@@ -75,24 +85,19 @@ int main(int argc, char* argv[]) {
     return as_integer(ExitCodes::GenericError);
   }
 
-  KnxTinySerial kdriver(serial_port);
+  ReadManager manager(serial_port);
 
-  kdriver.Init();
+  manager.Start();
 
-  while (is_running == 1) {
-    std::vector<unsigned char> frame;
-    if (kdriver.Read(frame)) {
-      PrintMsg(frame);
-    }
-    else if (frame.size()) {
-      FILE_LOG(logWARNING) << "INVALID MESSAGE";
-      PrintMsg(frame);
-    }
-    kdriver.Sleep(loop_ms);
+  FILE_LOG(logDEBUG) << "waiting exit...";
+  {
+    std::unique_lock<std::mutex> lock(exit_mutex);
+    exit_cond.wait(lock, [] { return exit_flag;});
   }
 
-  kdriver.DeInit();
-
+  FILE_LOG(logDEBUG) << "exit...";
+  manager.Stop();
+  manager.Join();
   serial_port.Close();
 
   FILE_LOG(logINFO) << "done." << std::endl;
