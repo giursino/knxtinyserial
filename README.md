@@ -1,13 +1,12 @@
 # knxtinyserial
 
-This project enable to access to KNX bus with the "KNX Tiny Interface 810" by Weinzierl Engineering GmbH. 
-datasheet https://www.weinzierl.de/index.php/en/all-knx/knx-module-en/knx-tinyserial-interface-810-en
+This project enables to access to the KNX bus with the "KNX Tiny Interface 810" by Weinzierl Engineering GmbH ([datasheet](https://www.weinzierl.de/index.php/en/all-knx/knx-module-en/knx-tinyserial-interface-810-en))
 
-This project does not use the Weinzierl SDK and it is test to Raspberry Pi 1 with GCC 6.3.
+This project does not use the Weinzierl SDK and it was tested to Raspberry Pi 1 with GCC 6.3.
 
 It is written with C++11.
 
-This project generate a library that can be used on other projects and generate two simple program 
+This project generates a library that can be used on other projects and it generates two simple programs 
 to send and read to/from KNX bus.
 
 ## Build for Raspberry
@@ -41,5 +40,5 @@ cpack --config CPackSourceConfig.cmake
 ```
 
 ## Use
-* `knxread` to read from KNX bus
-* `knxsend 11223344556677889900AABBCCDDEEFF` to send to KNX bus
+* `knxread` to read from KNX bus (CTRL-C to exit)
+* `knxsend -m "11223344556677889900AABBCCDDEEFF"` to send to KNX bus
