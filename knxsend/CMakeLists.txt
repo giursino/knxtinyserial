@@ -28,7 +28,7 @@ target_include_directories(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
     ${Boost_LIBRARIES}
     ${LIBSERIAL_LIBRARIES}
-    LibKnxTinySerial
+    KnxTinySerial
 )
 
 target_compile_options(${TARGET_NAME}

@@ -29,7 +29,7 @@ target_link_libraries(${TARGET_NAME}
     ${Boost_LIBRARIES}
     ${LIBSERIAL_LIBRARIES}
     pthread
-    LibKnxTinySerial
+    KnxTinySerial
 )
 
 target_compile_options(${TARGET_NAME}

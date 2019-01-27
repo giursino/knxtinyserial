@@ -25,7 +25,7 @@ if(ONLY_SERIAL)
     )
 
     target_link_libraries(${TARGET_NAME}
-      LibKnxTinySerial
+      KnxTinySerial
     )
 
 else()
@@ -42,7 +42,7 @@ else()
     target_link_libraries(${TARGET_NAME}
         ${LIBSERIAL_LIBRARIES}
         pthread
-        LibKnxTinySerial
+        KnxTinySerial
         )
 
     target_compile_options(${TARGET_NAME}

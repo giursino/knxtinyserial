@@ -1,4 +1,4 @@
-set(TARGET_NAME LibKnxTinySerial)
+set(TARGET_NAME KnxTinySerial)
 
 file(GLOB_RECURSE TARGET_SOURCES
     *.cpp
@@ -23,3 +23,7 @@ target_include_directories(${TARGET_NAME}
 
 install (TARGETS ${TARGET_NAME} DESTINATION lib)
 install (FILES ${TARGET_HEADERS} DESTINATION include)
+
+# generate pkg-file
+configure_file(${TARGET_NAME}.pc.in ${TARGET_NAME}.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.pc DESTINATION lib/pkgconfig)
