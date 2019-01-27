@@ -26,4 +26,4 @@ install (FILES ${TARGET_HEADERS} DESTINATION include)
 
 # generate pkg-file
 configure_file(${TARGET_NAME}.pc.in ${TARGET_NAME}.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.pc DESTINATION lib/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.pc DESTINATION ${CMAKE_INSTALL_DATADIR}/pkgconfig)

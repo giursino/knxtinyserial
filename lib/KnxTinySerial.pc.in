@@ -7,7 +7,6 @@ Name: @PROJECT_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
 
-Requires:
-Requires.private: libserial
+Requires: libserial
 Libs: -L${libdir} -lLibKnxTinySerial
 Cflags: -I${includedir}
