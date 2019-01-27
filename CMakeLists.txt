@@ -63,6 +63,18 @@ find_package(Boost 1.62 REQUIRED COMPONENTS filesystem program_options)
 # check required libraries
 pkg_check_modules(LIBSERIAL REQUIRED libserial)
 
+# build a CPack driven installer package
+include (InstallRequiredSystemLibraries)
+set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set (CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+set (CPACK_SYSTEM_NAME "rpi")
+set (CPACK_TOPLEVEL_TAG "rpi")
+set (CPACK_SET_DESTDIR "ON") # absolute path install
+include (CPack)
+
+
 add_subdirectory(lib)
 add_subdirectory(knxread)
 add_subdirectory(knxsend)

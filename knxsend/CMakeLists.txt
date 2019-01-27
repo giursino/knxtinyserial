@@ -35,3 +35,5 @@ target_compile_options(${TARGET_NAME}
   PUBLIC
     ${LIBSERIAL_CFLAGS_OTHER}
 )
+
+install (TARGETS ${TARGET_NAME} DESTINATION bin)

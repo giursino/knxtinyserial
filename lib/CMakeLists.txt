@@ -20,3 +20,6 @@ target_include_directories(${TARGET_NAME}
   PRIVATE
     ${CMAKE_SOURCE_DIR}/common
 )
+
+install (TARGETS ${TARGET_NAME} DESTINATION lib)
+install (FILES ${TARGET_HEADERS} DESTINATION include)

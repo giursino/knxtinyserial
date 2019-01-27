@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
 #define SERIAL_PATH "/dev/serial0"
 
 
-bool is_running=true;
+static bool is_running = true;
 
 #ifdef ONLY_SERIAL
 void SerialInit(SerialPort& serial_port) {

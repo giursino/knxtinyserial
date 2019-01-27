@@ -11,6 +11,7 @@ This project generate a library that can be used on other projects and generate 
 to send and read to/from KNX bus.
 
 ## Build for Raspberry
+
 ### Prerequisites
 * C++11 (GCC 6.3)
 * CMAKE >= 2.8
@@ -26,7 +27,17 @@ mkdir build
 cd build
 cmake -D CMAKE_TOOLCHAIN_FILE=../CMakeToolchainFile-RaspberryGCC6.cmake  ..
 make
-make install
+DEST=/tmp
+make DESTDIR=${DEST} install
+```
+
+### Build distribution
+```
+# build a binary distribution
+cpack --config CPackConfig.cmake
+
+# build a source distribution
+cpack --config CPackSourceConfig.cmake
 ```
 
 ## Use
