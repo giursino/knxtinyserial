@@ -8,5 +8,5 @@ Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 
 Requires: libserial
-Libs: -L${libdir} -lLibKnxTinySerial
+Libs: -L${libdir} -lKnxTinySerial
 Cflags: -I${includedir}

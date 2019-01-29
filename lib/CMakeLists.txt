@@ -24,7 +24,7 @@ target_include_directories(${TARGET_NAME}
 set_target_properties(${TARGET_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
-    PUBLIC_HEADER "")
+    PUBLIC_HEADER "KnxTinySerial.h")
 
 install (TARGETS ${TARGET_NAME}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
