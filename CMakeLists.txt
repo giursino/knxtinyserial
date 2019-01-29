@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
-project(KnxTinySerialProject)
+project(KnxTinySerialProject VERSION 1.1.0 LANGUAGES CXX)
 
 # project version
-set(VERSION_MAJOR 1)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
-message(STATUS "Project version: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+message(STATUS "Project version: ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
 # get git revision
 find_package(Git)
@@ -69,9 +66,9 @@ pkg_check_modules(LIBSERIAL REQUIRED libserial)
 # build a CPack driven installer package
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set (CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
-set (CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
-set (CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+set (CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set (CPACK_SYSTEM_NAME "rpi")
 set (CPACK_TOPLEVEL_TAG "rpi")
 set (CPACK_SET_DESTDIR "ON") # absolute path install
