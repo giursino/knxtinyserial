@@ -13,7 +13,7 @@ to send and read to/from KNX bus.
 
 ### Prerequisites
 * C++11 (GCC 6.3)
-* CMAKE >= 2.8
+* CMAKE >= 3.5
 * pkgconfig
 * libserial-dev (>= 0.6.0~rc2+svn122-4)
 * libboost-filesystem1.62-dev
