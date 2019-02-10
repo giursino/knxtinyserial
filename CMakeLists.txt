@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
+
+# verbose makefile
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 project(KnxTinySerialProject VERSION 1.1.0 LANGUAGES CXX)
