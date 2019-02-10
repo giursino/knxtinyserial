@@ -28,6 +28,7 @@ cmake -D CMAKE_TOOLCHAIN_FILE=../CMakeToolchainFile-RaspberryGCC6.cmake  ..
 make
 DEST=/tmp
 make DESTDIR=${DEST} install
+ldconfig
 ```
 
 ### Build distribution
